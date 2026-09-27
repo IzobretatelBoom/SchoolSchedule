@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'docs/*.plantuml'
+      - '.github/workflows/plantuml.yml'
   workflow_dispatch:
 
 jobs:
@@ -16,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Install PlantUML
         run: |
@@ -32,4 +33,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/UseCase.svg
           git commit -m "Auto-render PlantUML diagram" || echo "No changes to commit"
+          git pull --rebase origin main
           git push
