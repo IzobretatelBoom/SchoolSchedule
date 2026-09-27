@@ -1,0 +1,78 @@
+@startuml UseCase
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title Диаграмма вариантов использования — SchoolSchedule
+
+' ===== Акторы =====
+actor "Неавторизованный\nпользователь" as Guest
+actor "Ученик" as Student
+actor "Учитель" as Teacher
+
+' Учитель наследует возможности ученика (просмотр расписания)
+Student <|-- Teacher
+
+' ===== Система =====
+rectangle "SchoolSchedule" {
+
+  ' --- Общие ---
+  usecase "Зарегистрироваться\n(ученик)" as UC_Register
+  usecase "Авторизоваться" as UC_Login
+
+  ' --- Просмотр (доступно и ученику, и учителю) ---
+  usecase "Просмотреть всё\nрасписание" as UC_ViewAll
+  usecase "Просмотреть расписание\nпо классу" as UC_ViewByClass
+  usecase "Просмотреть расписание\nпо учителю" as UC_ViewByTeacher
+
+  ' --- Редактирование (только учитель) ---
+  usecase "Добавить урок\nв расписание" as UC_AddLesson
+  usecase "Изменить урок" as UC_EditLesson
+  usecase "Удалить урок" as UC_DelLesson
+
+  ' --- Предметы (только учитель) ---
+  usecase "Добавить предмет" as UC_AddSubject
+  usecase "Удалить предмет" as UC_DelSubject
+  usecase "Просмотреть список\nпредметов" as UC_ListSubjects
+
+  ' --- Управление пользователями (только учитель) ---
+  usecase "Зарегистрировать\nученика" as UC_RegStudent
+  usecase "Создать учителя" as UC_CreateTeacher
+  usecase "Просмотреть\nпользователей" as UC_ListUsers
+  usecase "Удалить пользователя" as UC_DelUser
+  usecase "Сменить пароль\nпользователя" as UC_ChangePwd
+  usecase "Выйти из аккаунта" as UC_Logout
+
+  ' ===== Связи акторов =====
+  Guest --> UC_Register
+  Guest --> UC_Login
+
+  Student --> UC_ViewAll
+  Student --> UC_ViewByClass
+  Student --> UC_ViewByTeacher
+  Student --> UC_Logout
+
+  Teacher --> UC_ViewAll
+  Teacher --> UC_ViewByClass
+  Teacher --> UC_ViewByTeacher
+  Teacher --> UC_AddLesson
+  Teacher --> UC_EditLesson
+  Teacher --> UC_DelLesson
+  Teacher --> UC_AddSubject
+  Teacher --> UC_DelSubject
+  Teacher --> UC_ListSubjects
+  Teacher --> UC_RegStudent
+  Teacher --> UC_CreateTeacher
+  Teacher --> UC_ListUsers
+  Teacher --> UC_DelUser
+  Teacher --> UC_ChangePwd
+  Teacher --> UC_Logout
+
+  ' ===== include / extend =====
+  UC_Login ..> UC_ViewAll : <<include>>
+  UC_AddLesson ..> UC_ListSubjects : <<include>>
+  UC_AddLesson ..> UC_ListUsers : <<include>>
+  UC_EditLesson ..> UC_ViewAll : <<include>>
+  UC_EditLesson ..> UC_ListSubjects : <<include>>
+}
+@enduml
