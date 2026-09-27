@@ -111,9 +111,9 @@ public class ConsoleUI {
             4.  Добавить урок в расписание
             5.  Изменить урок
             6.  Удалить урок
-            7.  Список предметов
-            8.  Добавить предмет
-            9.  Удалить предмет
+            7.  Список дисциплин
+            8.  Добавить дисциплину
+            9.  Удалить дисциплину
             10. Список пользователей
             11. Зарегистрировать ученика
             12. Создать учителя
@@ -155,7 +155,7 @@ public class ConsoleUI {
             printSubjects();
             int day = readInt("День (1-7): ");
             int lesson = readInt("Номер урока (1-10): ");
-            int subjectId = readInt("ID предмета: ");
+            int subjectId = readInt("ID дисциплины: ");
             int teacherId = readInt("ID учителя: ");
             String className = readLine("Класс: ");
             schedule.add(day, lesson, subjectId, teacherId, className);
@@ -172,7 +172,7 @@ public class ConsoleUI {
             int day = readInt("День (1-7): ");
             int lesson = readInt("Номер урока (1-10): ");
             printSubjects();
-            int subjectId = readInt("ID предмета: ");
+            int subjectId = readInt("ID дисциплины: ");
             int teacherId = readInt("ID учителя: ");
             String className = readLine("Класс: ");
             schedule.update(id, day, lesson, subjectId, teacherId, className);
@@ -196,9 +196,9 @@ public class ConsoleUI {
 
     private void addSubject() {
         try {
-            String name = readLine("Название предмета: ");
+            String name = readLine("Название дисциплины: ");
             subjects.add(name);
-            System.out.println("Предмет добавлен.");
+            System.out.println("Дисциплина добавлена.");
         } catch (Exception e) {
             System.out.println("Ошибка: " + e.getMessage());
         }
@@ -207,7 +207,7 @@ public class ConsoleUI {
     private void deleteSubject() {
         try {
             printSubjects();
-            int id = readInt("ID предмета для удаления: ");
+            int id = readInt("ID дисциплины для удаления: ");
             subjects.delete(id);
             System.out.println("Удалено.");
         } catch (Exception e) {
@@ -261,10 +261,10 @@ public class ConsoleUI {
         try {
             List<Subject> list = subjects.listAll();
             if (list.isEmpty()) {
-                System.out.println("(нет предметов)");
+                System.out.println("(нет дисциплин)");
                 return;
             }
-            System.out.println("--- Предметы ---");
+            System.out.println("--- Дисциплины ---");
             for (Subject s : list) System.out.println(s.getId() + ") " + s.getName());
         } catch (SQLException e) {
             System.out.println("Ошибка БД: " + e.getMessage());
@@ -288,7 +288,7 @@ public class ConsoleUI {
             return;
         }
         System.out.printf("%-4s %-12s %-4s %-18s %-15s %-10s%n",
-                "ID", "День", "Урок", "Предмет", "Учитель", "Класс");
+                "ID", "День", "Урок", "Дисциплина", "Учитель", "Класс");
         for (ScheduleEntry e : list) {
             System.out.printf("%-4d %-12s %-4d %-18s %-15s %-10s%n",
                     e.getId(),
