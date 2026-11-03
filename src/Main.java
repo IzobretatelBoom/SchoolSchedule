@@ -1,5 +1,9 @@
+import db.Database;
+import ui.ConsoleUI;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        Database.init();
+        new ConsoleUI().run();
     }
 }

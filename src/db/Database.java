@@ -53,9 +53,8 @@ public class Database {
             st.execute(subjects);
             st.execute(schedule);
             seedAdmin();
-            seedTestData();
         } catch (SQLException e) {
-            throw new RuntimeException("Ошибка инициализации базы данных", e);
+            throw new RuntimeException("Ошибка инициализации БД", e);
         }
     }
 
@@ -65,65 +64,7 @@ public class Database {
             if (rs.next() && rs.getInt(1) == 0) {
                 String insert = "INSERT INTO users(username, password, role) VALUES('admin','admin','TEACHER')";
                 getConnection().createStatement().execute(insert);
-                System.out.println("[инициализация] Создан учитель по умолчанию: admin / admin");
-            }
-        }
-    }
-
-    private static void seedTestData() throws SQLException {
-        // Тестовые предметы
-        String[] subjects = { "Математика", "Физика", "Информатика" };
-        String insertSubject = "INSERT OR IGNORE INTO subjects(name) VALUES(?)";
-        try (var ps = getConnection().prepareStatement(insertSubject)) {
-            for (String s : subjects) {
-                ps.setString(1, s);
-                ps.executeUpdate();
-            }
-        }
-
-        // Тестовые студенты
-        String[] students = { "Иванов", "Петров", "Сидоров" };
-        String insertUser = "INSERT OR IGNORE INTO users(username, password, role) VALUES(?, ?, 'STUDENT')";
-        try (var ps = getConnection().prepareStatement(insertUser)) {
-            for (String u : students) {
-                ps.setString(1, u);
-                ps.setString(2, "студент"); // пароль по умолчанию
-                ps.executeUpdate();
-            }
-        }
-
-        // Получаем идентификатор учителя и предметов
-        int teacherId = -1;
-        try (var rs = getConnection().createStatement()
-                .executeQuery("SELECT id FROM users WHERE username = 'admin' LIMIT 1")) {
-            if (rs.next()) teacherId = rs.getInt(1);
-        }
-        if (teacherId < 0) return;
-
-        int mathId = -1, physId = -1;
-        try (var rs = getConnection().createStatement()
-                .executeQuery("SELECT id, name FROM subjects")) {
-            while (rs.next()) {
-                if ("Математика".equals(rs.getString("name"))) mathId = rs.getInt("id");
-                if ("Физика".equals(rs.getString("name")))     physId = rs.getInt("id");
-            }
-        }
-
-        // Тестовое расписание
-        String insertSchedule = """
-            INSERT OR IGNORE INTO schedule(day_of_week, lesson_number, subject_id, teacher_id, class_name)
-            VALUES(?, ?, ?, ?, ?)
-            """;
-        try (var ps = getConnection().prepareStatement(insertSchedule)) {
-            if (mathId > 0) {
-                ps.setInt(1, 1); ps.setInt(2, 1); ps.setInt(3, mathId);
-                ps.setInt(4, teacherId); ps.setString(5, "10А");
-                ps.executeUpdate();
-            }
-            if (physId > 0) {
-                ps.setInt(1, 1); ps.setInt(2, 2); ps.setInt(3, physId);
-                ps.setInt(4, teacherId); ps.setString(5, "10А");
-                ps.executeUpdate();
+                System.out.println("[init] Создан учитель по умолчанию: admin / admin");
             }
         }
     }
