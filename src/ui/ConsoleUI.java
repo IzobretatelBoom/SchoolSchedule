@@ -15,6 +15,7 @@ public class ConsoleUI {
     private final UserService users = new UserService();
     private final SubjectService subjects = new SubjectService();
     private final ScheduleService schedule = new ScheduleService();
+    private ExportService export;   // соединение открывается при первой выгрузке
 
     public void run() {
         clearScreen();
@@ -119,6 +120,7 @@ public class ConsoleUI {
             12. Создать учителя
             13. Удалить пользователя
             14. Сменить пароль пользователя
+            15. Выгрузить таблицу БД (JSON, CSV, XML, YAML)
             99. Выйти из аккаунта
             0.  Выход""");
         switch (readInt("> ")) {
@@ -142,6 +144,7 @@ public class ConsoleUI {
             case 12 -> createTeacher();
             case 13 -> deleteUser();
             case 14 -> changePassword();
+            case 15 -> exportMenu();
             case 99 -> { auth.logout(); return; }
             case 0 -> { System.out.println("До свидания!"); System.exit(0); }
             default -> System.out.println("Неверный пункт");
@@ -256,6 +259,39 @@ public class ConsoleUI {
         }
     }
 
+    // ---------- Экспорт данных ----------
+
+    // Меню выгрузки таблицы БД в файлы JSON, CSV, XML и YAML.
+    // Список таблиц и колонок берётся из метаданных, поэтому новые таблицы
+    // появляются в меню автоматически.
+    private void exportMenu() {
+        try {
+            if (export == null) export = new ExportService();
+            List<String> tables = export.tables();
+            System.out.println("--- Выгрузка данных ---");
+            System.out.println("Доступные таблицы:");
+            for (int i = 0; i < tables.size(); i++) {
+                System.out.printf("  %d) %s%n", i + 1, tables.get(i));
+            }
+
+            int choice = readInt("Выберите таблицу: ");
+            if (choice < 1 || choice > tables.size()) {
+                System.out.println("Неверный пункт");
+                return;
+            }
+            String table = tables.get(choice - 1);
+            System.out.println("\nТаблица: " + table);
+            System.out.println("Записей: " + export.count(table));
+            System.out.println("Колонки: " + String.join(", ", export.columns(table)));
+
+            export.export(table);
+            System.out.println("\nГотово. Файлы в папке " + ExportService.DIRECTORY.toAbsolutePath().normalize()
+                    + ": data.json, data.csv, data.xml, data.yaml");
+        } catch (Exception e) {
+            System.out.println("Ошибка выгрузки: " + e.getMessage());
+        }
+    }
+
     // ---------- Вспомогательные ----------
     private void printSubjects() {
         try {
@@ -321,23 +357,25 @@ public class ConsoleUI {
      * Работает в Windows Terminal, PowerShell (7+), Linux, macOS.
      * В IntelliJ IDEA нужно включить
      * Run → Edit Configurations → Modify options → Emulate terminal in output console.
+     * <p>
+     * Дочерний процесс получает только вывод консоли, но не стандартный ввод:
+     * иначе {@code cmd /c cls} перехватывает введённые пользователем строки,
+     * и {@link Scanner} их не получает.
      */
     private void clearScreen() {
         try {
             String os = System.getProperty("os.name").toLowerCase();
-            if (os.contains("win")) {
-                new ProcessBuilder("cmd", "/c", "cls")
-                        .inheritIO()
-                        .start()
-                        .waitFor();
-            } else {
-                new ProcessBuilder("clear")
-                        .inheritIO()
-                        .start()
-                        .waitFor();
-            }
+            ProcessBuilder builder = os.contains("win")
+                    ? new ProcessBuilder("cmd", "/c", "cls")
+                    : new ProcessBuilder("clear");
+            builder.redirectInput(ProcessBuilder.Redirect.PIPE);
+            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+            Process process = builder.start();
+            process.getOutputStream().close();
+            process.waitFor();
         } catch (Exception e) {
-            e.printStackTrace();
+            // Очистка экрана — не критичная операция: работаем без неё.
         }
     }
 
